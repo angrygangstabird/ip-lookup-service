@@ -21,7 +21,7 @@ public class LookupJournalService {
         this.repository = repository;
     }
 
-    @Async
+    @Async("journalExecutor")
     public void record(IpLookupResponse response) {
         try {
             LookupJournalEntry entry = new LookupJournalEntry();
