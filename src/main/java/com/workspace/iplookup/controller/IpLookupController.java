@@ -47,6 +47,10 @@ public class IpLookupController {
             return ResponseEntity
                     .status(httpStatus)
                     .body(new ErrorResponse(httpStatus, e.getType(), e.getMessage()));
+        } catch (IpLookupService.CircuitOpenException e) {
+            return ResponseEntity
+                    .status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(new ErrorResponse(503, "Service Unavailable", e.getMessage()));
         } catch (Exception e) {
             log.error("Unexpected error during lookup for IP {}: {}", ip, e.getMessage());
             return ResponseEntity
@@ -69,6 +73,10 @@ public class IpLookupController {
             return ResponseEntity
                     .status(httpStatus)
                     .body(new ErrorResponse(httpStatus, e.getType(), e.getMessage()));
+        } catch (IpLookupService.CircuitOpenException e) {
+            return ResponseEntity
+                    .status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(new ErrorResponse(503, "Service Unavailable", e.getMessage()));
         } catch (Exception e) {
             log.error("Unexpected error during self-lookup for IP {}: {}", clientIp, e.getMessage());
             return ResponseEntity
