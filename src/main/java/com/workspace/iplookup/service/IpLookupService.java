@@ -1,6 +1,5 @@
 package com.workspace.iplookup.service;
 
-import com.workspace.iplookup.country.CountryService;
 import com.workspace.iplookup.journal.LookupJournalService;
 import com.workspace.iplookup.model.IpLookupResponse;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -22,19 +21,16 @@ public class IpLookupService {
 
     private final RestTemplate restTemplate;
     private final LookupJournalService journalService;
-    private final CountryService countryService;
     private final String apiKey;
     private final String baseUrl;
 
     public IpLookupService(
             RestTemplate restTemplate,
             LookupJournalService journalService,
-            CountryService countryService,
             @Value("${ipstack.api.key}") String apiKey,
             @Value("${ipstack.api.base-url}") String baseUrl) {
         this.restTemplate = restTemplate;
         this.journalService = journalService;
-        this.countryService = countryService;
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
     }
@@ -73,7 +69,6 @@ public class IpLookupService {
 
         log.info("Successfully fetched IP data for: {}", ip);
         journalService.record(response);
-        countryService.store(response.getCountryCode(), response.getCountryName());
         return response;
     }
 
