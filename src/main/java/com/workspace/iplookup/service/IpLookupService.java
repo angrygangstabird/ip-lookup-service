@@ -1,5 +1,6 @@
 package com.workspace.iplookup.service;
 
+import com.workspace.iplookup.journal.LookupJournalService;
 import com.workspace.iplookup.model.IpLookupResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,14 +17,17 @@ public class IpLookupService {
     private static final Logger log = LoggerFactory.getLogger(IpLookupService.class);
 
     private final RestTemplate restTemplate;
+    private final LookupJournalService journalService;
     private final String apiKey;
     private final String baseUrl;
 
     public IpLookupService(
             RestTemplate restTemplate,
+            LookupJournalService journalService,
             @Value("${ipstack.api.key}") String apiKey,
             @Value("${ipstack.api.base-url}") String baseUrl) {
         this.restTemplate = restTemplate;
+        this.journalService = journalService;
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
     }
@@ -49,6 +53,7 @@ public class IpLookupService {
                 throw new IpstackApiException(err.getCode(), err.getType(), err.getInfo());
             }
             log.info("Successfully fetched IP data for: {}", ip);
+            journalService.record(response);
             return response;
         } catch (IpstackApiException e) {
             throw e;
