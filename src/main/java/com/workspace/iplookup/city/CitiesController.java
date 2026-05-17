@@ -25,6 +25,30 @@ public class CitiesController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/autocomplete")
+    public ResponseEntity<?> autocomplete(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String country,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        boolean hasQuery = q != null && !q.isBlank();
+        boolean hasCountry = country != null && !country.isBlank();
+
+        if (!hasQuery && !hasCountry) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse(400, "Bad Request", "Provide at least one of: q (city prefix), country (country code)"));
+        }
+
+        limit = Math.min(Math.max(limit, 1), 20);
+
+        List<City> results = cityService.autocomplete(
+                hasQuery ? q.strip() : null,
+                hasCountry ? country.strip() : null,
+                limit);
+
+        return ResponseEntity.ok(results);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id) {
         return cityService.getById(id)
@@ -48,7 +72,6 @@ public class CitiesController {
         }
 
         boolean existed = cityService.exists(request.cityName(), request.countryCode());
-
         City city = cityService.store(request.cityName(), request.countryCode());
 
         return existed
