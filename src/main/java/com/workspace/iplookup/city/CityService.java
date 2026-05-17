@@ -2,6 +2,8 @@ package com.workspace.iplookup.city;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,5 +54,21 @@ public class CityService {
     public boolean exists(String cityName, String countryCode) {
         return repository.findByCityNameIgnoreCaseAndCountryCodeIgnoreCase(
                 cityName.strip(), countryCode.toUpperCase().strip()).isPresent();
+    }
+
+    public List<City> autocomplete(String prefix, String countryCode, int limit) {
+        PageRequest page = PageRequest.of(0, limit, Sort.by("cityName").ascending());
+
+        boolean hasPrefix = prefix != null && !prefix.isBlank();
+        boolean hasCountry = countryCode != null && !countryCode.isBlank();
+
+        if (hasPrefix && hasCountry) {
+            return repository.findByCityNameStartingWithIgnoreCaseAndCountryCodeIgnoreCase(
+                    prefix, countryCode.toUpperCase(), page);
+        }
+        if (hasPrefix) {
+            return repository.findByCityNameStartingWithIgnoreCase(prefix, page);
+        }
+        return repository.findByCountryCodeIgnoreCase(countryCode.toUpperCase(), page);
     }
 }
