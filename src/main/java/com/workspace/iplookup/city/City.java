@@ -9,7 +9,8 @@ import java.time.Instant;
 @Entity
 @Table(
     name = "cities",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"city_name", "country_code"})
+    uniqueConstraints = @UniqueConstraint(columnNames = {"city_name", "country_code"}),
+    indexes = @Index(name = "idx_cities_city_name", columnList = "city_name")
 )
 @Data
 @NoArgsConstructor
