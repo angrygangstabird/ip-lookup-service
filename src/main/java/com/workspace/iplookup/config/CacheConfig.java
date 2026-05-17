@@ -14,7 +14,7 @@ public class CacheConfig {
     @Bean
     public Caffeine<Object, Object> caffeineConfig() {
         return Caffeine.newBuilder()
-                .maximumSize(1000)
+                .maximumSize(5_000)
                 .expireAfterWrite(5, TimeUnit.MINUTES)
                 .recordStats();
     }
@@ -23,6 +23,7 @@ public class CacheConfig {
     public CacheManager cacheManager(Caffeine<Object, Object> caffeine) {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager("ipLookup");
         cacheManager.setCaffeine(caffeine);
+        cacheManager.setAsyncCacheMode(true);
         return cacheManager;
     }
 }
