@@ -2,11 +2,11 @@ package com.workspace.iplookup.country;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CountryService {
@@ -19,28 +19,26 @@ public class CountryService {
         this.repository = repository;
     }
 
-    @Async("journalExecutor")
     @Transactional
-    public void store(String countryCode, String countryName) {
-        if (countryCode == null || countryCode.isBlank()) return;
-        try {
-            if (!repository.existsById(countryCode)) {
-                Country country = new Country();
-                country.setCountryCode(countryCode.toUpperCase());
-                country.setCountryName(countryName != null ? countryName : countryCode);
-                repository.save(country);
-                log.debug("Stored new country: {} ({})", countryName, countryCode);
-            }
-        } catch (Exception e) {
-            log.error("Failed to store country {} {}: {}", countryCode, countryName, e.getMessage());
+    public Country store(String countryCode, String countryName) {
+        String code = countryCode.toUpperCase().strip();
+        Optional<Country> existing = repository.findById(code);
+        if (existing.isPresent()) {
+            return existing.get();
         }
+        Country country = new Country();
+        country.setCountryCode(code);
+        country.setCountryName(countryName.strip());
+        Country saved = repository.save(country);
+        log.info("Stored new country: {} ({})", countryName, code);
+        return saved;
     }
 
     public List<Country> getAll() {
         return repository.findAll();
     }
 
-    public Country getByCode(String code) {
-        return repository.findById(code.toUpperCase()).orElse(null);
+    public Optional<Country> getByCode(String code) {
+        return repository.findById(code.toUpperCase().strip());
     }
 }
