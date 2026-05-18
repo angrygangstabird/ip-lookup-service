@@ -28,25 +28,16 @@ public class CitiesController {
     @GetMapping("/autocomplete")
     public ResponseEntity<?> autocomplete(
             @RequestParam(required = false) String q,
-            @RequestParam(required = false) String country,
             @RequestParam(defaultValue = "10") int limit) {
 
-        boolean hasQuery = q != null && !q.isBlank();
-        boolean hasCountry = country != null && !country.isBlank();
-
-        if (!hasQuery && !hasCountry) {
+        if (q == null || q.isBlank()) {
             return ResponseEntity.badRequest()
-                    .body(new ErrorResponse(400, "Bad Request", "Provide at least one of: q (city prefix), country (country code)"));
+                    .body(new ErrorResponse(400, "Bad Request", "q is required"));
         }
 
         limit = Math.min(Math.max(limit, 1), 20);
 
-        List<City> results = cityService.autocomplete(
-                hasQuery ? q.strip() : null,
-                hasCountry ? country.strip() : null,
-                limit);
-
-        return ResponseEntity.ok(results);
+        return ResponseEntity.ok(cityService.autocomplete(q, limit));
     }
 
     @GetMapping("/{id}")
