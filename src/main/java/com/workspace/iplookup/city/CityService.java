@@ -3,7 +3,6 @@ package com.workspace.iplookup.city;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,19 +55,19 @@ public class CityService {
                 cityName.strip(), countryCode.toUpperCase().strip()).isPresent();
     }
 
-    public List<City> autocomplete(String prefix, String countryCode, int limit) {
-        PageRequest page = PageRequest.of(0, limit, Sort.by("cityName").ascending());
+    /**
+     * Autocomplete using a single free-text string.
+     * Tokens are split by whitespace; order does not matter.
+     * Each token must match cityName (prefix) OR countryCode (prefix).
+     * Up to 2 tokens are used; extra tokens are ignored.
+     */
+    public List<City> autocomplete(String q, int limit) {
+        PageRequest page = PageRequest.of(0, limit);
+        String[] tokens = q.strip().split("\\s+");
 
-        boolean hasPrefix = prefix != null && !prefix.isBlank();
-        boolean hasCountry = countryCode != null && !countryCode.isBlank();
-
-        if (hasPrefix && hasCountry) {
-            return repository.findByCityNameStartingWithIgnoreCaseAndCountryCodeIgnoreCase(
-                    prefix, countryCode.toUpperCase(), page);
+        if (tokens.length == 1) {
+            return repository.findByToken(tokens[0], page);
         }
-        if (hasPrefix) {
-            return repository.findByCityNameStartingWithIgnoreCase(prefix, page);
-        }
-        return repository.findByCountryCodeIgnoreCase(countryCode.toUpperCase(), page);
+        return repository.findByTwoTokens(tokens[0], tokens[1], page);
     }
 }
